@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
+
+body {
+  font-family: 'Prompt', sans-serif;
+  background: linear-gradient(135deg, #ede9fe 0%, #e0f2fe 50%, #fce7f3 100%) !important;
+  color: #1e1b4b !important;
+}
+
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.pastel-card {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid #e9d5ff !important;
+  box-shadow: 0 8px 24px -4px rgba(139, 92, 246, 0.08);
+}
+
+.pastel-input {
+  background: rgba(250, 245, 255, 0.7) !important;
+  border: 1px solid #e9d5ff !important;
+  color: #1e1b4b !important;
+}
+.pastel-input:focus {
+  background: #ffffff !important;
+  border-color: #8b5cf6 !important;
+}
+
+.pastel-btn-primary {
+  background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 100%) !important;
+  color: #ffffff !important;
+}
