@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Lovey-Companion Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="flex justify-center items-center min-h-screen p-0 sm:p-4">
+
+  <!-- ==================== 0. LOGIN MODAL ==================== -->
+  <div id="login-screen" class="fixed inset-0 bg-indigo-950/30 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="w-full max-w-sm pastel-card rounded-3xl p-6 space-y-4">
+      <div class="text-center space-y-2">
+        <label class="relative inline-block cursor-pointer group">
+          <img id="login-avatar-preview" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80" class="w-16 h-16 rounded-full object-cover border-2 border-violet-400 mx-auto shadow-md">
+          <div class="absolute inset-0 bg-black/30 rounded-full flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition">
+            <i class="fa-solid fa-camera"></i>
+          </div>
+          <input type="file" accept="image/*" class="hidden" onchange="previewLoginAvatar(event)">
+        </label>
+        <div>
+          <h2 class="text-base font-bold text-indigo-950">เข้าสู่ระบบ Lovey-Companion</h2>
+          <p class="text-[11px] text-purple-600">ตั้งชื่อผู้ใช้และอัปโหลดรูปโปรไฟล์เพื่อเริ่มใช้งาน</p>
+        </div>
+      </div>
+
+      <div class="space-y-3 pt-1">
+        <div>
+          <label class="block text-xs text-slate-600 font-medium mb-1">อีเมลของคุณ</label>
+          <input id="login-email-input" type="email" placeholder="name@example.com" class="w-full pastel-input rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-600 font-medium mb-1">ชื่อผู้ใช้งาน (Display Name)</label>
+          <input id="login-name-input" type="text" placeholder="คุณหนูนักท่องฝัน" class="w-full pastel-input rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none">
+        </div>
+      </div>
+
+      <button onclick="handleLogin()" class="w-full py-3 pastel-btn-primary font-bold rounded-2xl text-xs transition">
+        เข้าสู่ระบบ
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Shell -->
+  <div class="w-full max-w-md h-screen sm:h-[860px] bg-white sm:rounded-[36px] flex flex-col overflow-hidden shadow-2xl border border-purple-100 relative">
+    
+    <!-- ==================== VIEW 1: LOBBY ==================== -->
+    <div id="view-lobby" class="flex-1 flex flex-col overflow-hidden bg-slate-50/60">
+      
+      <!-- Top Header -->
+      <header class="p-3 bg-white/90 backdrop-blur border-b border-purple-100 flex justify-between items-center z-10">
+        <div class="flex items-center gap-2">
+          <label class="relative cursor-pointer group">
+            <img id="header-user-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80" class="w-9 h-9 rounded-full object-cover border-2 border-violet-300 shadow-sm">
+            <input type="file" accept="image/*" class="hidden" onchange="uploadUserAvatar(event)">
+          </label>
+          <div>
+            <h1 id="header-user-name" class="text-xs font-bold text-indigo-950 leading-tight">คุณหนูนักท่องฝัน</h1>
+            <p id="lobby-header-title" class="text-[10px] text-purple-600 font-medium">หน้าหลัก</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+          <button onclick="openCoinShopModal()" class="flex items-center gap-1 px-2 py-1 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-full transition shadow-sm">
+            <span class="text-xs">🐰</span>
+            <span id="user-coin-balance" class="text-[11px] font-bold text-purple-700">10</span>
+          </button>
+          <button onclick="openCoinShopModal()" class="flex items-center gap-1 px-2 py-1 bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-full transition shadow-sm">
+            <span class="text-xs">🐱</span>
+            <span id="user-cat-coin-balance" class="text-[11px] font-bold text-sky-700">50</span>
+          </button>
+          <div class="flex items-center gap-1 pl-1">
+            <span id="api-status-dot" class="w-2 h-2 rounded-full bg-purple-300"></span>
+            <span id="api-status-label" class="text-[10px] font-medium text-slate-500">ออฟไลน์</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Lobby Scroll Area -->
+      <div class="flex-1 overflow-y-auto hide-scrollbar p-4 space-y-4">
+        
+        <!-- TAB 1: HOME -->
+        <section id="tab-home" class="space-y-4">
+          <div class="bg-gradient-to-br from-violet-100/70 via-white to-sky-100/60 p-4 rounded-3xl border border-purple-200/60 shadow-sm relative overflow-hidden">
+            <div class="flex items-center gap-3.5">
+              <label class="relative cursor-pointer group">
+                <img id="user-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80" class="w-14 h-14 rounded-full object-cover border-2 border-white shadow-md">
+                <input type="file" accept="image/*" class="hidden" onchange="uploadUserAvatar(event)">
+              </label>
+              <div class="flex-1">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h2 id="user-name" class="text-base font-bold text-indigo-950">คุณหนูนักท่องฝัน</h2>
+                    <p id="user-bio" class="text-[11px] text-slate-600 mt-0.5">"ชอบบทบรรยายโรแมนติกแฟนตาซีและตัวละครขี้อ้อน"</p>
+                  </div>
+                  <button onclick="handleLogout()" class="p-1.5 text-slate-400 hover:text-rose-500 rounded-xl transition">
+                    <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Persona Box -->
+          <div class="pastel-card p-4 rounded-3xl space-y-3">
+            <div class="flex justify-between items-center">
+              <h3 class="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
+                <i class="fa-solid fa-id-card-clip text-violet-500"></i> โปรไฟล์ที่ใช้คุยกับบอท (Persona)
+              </h3>
+              <button onclick="checkAndOpenCreatePersona()" class="px-2.5 py-1.5 pastel-btn-primary rounded-xl text-[10px] font-semibold flex items-center gap-1 shadow-sm">
+                + สร้างโปรไฟล์
+              </button>
+            </div>
+            <div id="persona-list-container" class="space-y-2"></div>
+          </div>
+        </section>
+
+        <!-- TAB 2: EXPLORE & CREATOR -->
+        <section id="tab-explore" class="hidden space-y-3.5 pb-8">
+          <div id="explore-discovery-view" class="space-y-3.5">
+            <div class="flex p-1 bg-purple-100/60 rounded-2xl border border-purple-200 text-xs font-bold">
+              <button onclick="switchExploreSubTab('public')" id="subtab-btn-public" class="flex-1 py-2 rounded-xl bg-white text-purple-700 shadow-sm">ค้นหาบอท</button>
+              <button onclick="switchExploreSubTab('mybots')" id="subtab-btn-mybots" class="flex-1 py-2 rounded-xl text-slate-500">🐰 บอทที่ฉันสร้าง</button>
+            </div>
+            <div class="flex items-center justify-between gap-2 px-0.5">
+              <div>
+                <h2 id="explore-subtab-title" class="text-xs font-bold text-indigo-950">ค้นหาบอทสาธารณะ</h2>
+                <p id="explore-subtab-desc" class="text-[10px] text-slate-500">เลือกบอทที่เผยแพร่แล้วเพื่อเข้าสู่บทสนทนา</p>
+              </div>
+              <button onclick="switchToBotCreatorForm()" class="px-3 py-1.5 pastel-btn-primary rounded-2xl text-[11px] font-bold flex items-center gap-1 shadow-sm flex-shrink-0">
+                + สร้างบอทใหม่
+              </button>
+            </div>
+            <div id="explore-search-bar" class="relative">
+              <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs"></i>
+              <input id="bot-search-input" oninput="filterExploreBots()" type="text" placeholder="ค้นหาชื่อบอท, นิสัย..." class="w-full pastel-input rounded-2xl pl-9 pr-3.5 py-2 text-xs focus:outline-none">
+            </div>
+            <div id="explore-bot-cards-container" class="space-y-2.5 pt-1"></div>
+          </div>
+
+          <!-- Creator View -->
+          <div id="explore-creator-view" class="hidden space-y-3">
+            <button onclick="switchToBotDiscovery()" class="text-xs text-slate-500 font-medium"><i class="fa-solid fa-chevron-left"></i> กลับไปหน้ารวมบอท</button>
+            <div class="flex gap-2 border-b border-purple-100 pb-1 text-xs font-medium overflow-x-auto hide-scrollbar">
+              <button onclick="switchBotTab('profile')" id="btab-btn-profile" class="text-violet-600 font-bold border-b-2 border-violet-500 pb-1">Profile</button>
+              <button onclick="switchBotTab('basic')" id="btab-btn-basic" class="text-slate-400 pb-1">ข้อมูลบอท</button>
+              <button onclick="switchBotTab('first')" id="btab-btn-first" class="text-slate-400 pb-1">สถานการณ์</button>
+              <button onclick="switchBotTab('extra')" id="btab-btn-extra" class="text-slate-400 pb-1">รายละเอียดเพิ่มเติม</button>
+              <button onclick="switchBotTab('advanced')" id="btab-btn-advanced" class="text-slate-400 pb-1">ตั้งค่าเพิ่มเติม</button>
+            </div>
+
+            <div class="pastel-card rounded-3xl p-4 space-y-3 text-xs">
+              <div id="btab-profile" class="space-y-3">
+                <input id="bot-name-input" type="text" placeholder="ชื่อตัวละคร" class="w-full pastel-input rounded-2xl p-2.5">
+                <input id="bot-age-input" type="text" placeholder="อายุ" class="w-full pastel-input rounded-2xl p-2.5">
+                <input id="bot-career-input" type="text" placeholder="อาชีพ" class="w-full pastel-input rounded-2xl p-2.5">
+                <input id="bot-quote-input" type="text" placeholder="คำพูดเปิดตัว" class="w-full pastel-input rounded-2xl p-2.5">
+                <input id="bot-preview-input" type="text" placeholder="พรีวิวสั้นๆ" class="w-full pastel-input rounded-2xl p-2.5">
+                <textarea id="bot-story-input" rows="4" placeholder="เรื่องเล่า / สตอรี่แบบละเอียด" class="w-full pastel-input rounded-2xl p-2.5"></textarea>
+              </div>
+
+              <div id="btab-basic" class="hidden space-y-3">
+                <textarea id="bot-info-input" rows="3" placeholder="ข้อมูลพื้นฐาน" class="w-full pastel-input rounded-2xl p-2.5"></textarea>
+                <textarea id="bot-personality-input" rows="3" placeholder="นิสัยและพฤติกรรม" class="w-full pastel-input rounded-2xl p-2.5"></textarea>
+                <input id="bot-mbti-input" type="text" placeholder="MBTI" class="w-full pastel-input rounded-2xl p-2.5">
+              </div>
+
+              <div id="btab-first" class="hidden space-y-3">
+                <textarea id="bot-first-encounter-input" rows="5" placeholder="ฉากแรกเจอ (*บรรยาย* &quot;คำพูด&quot; {user})" class="w-full pastel-input rounded-2xl p-2.5"></textarea>
+              </div>
+
+              <div id="btab-extra" class="hidden space-y-3">
+                <div id="bot-extra-slots-container" class="space-y-2"></div>
+                <button onclick="unlockExtraBotSlot()" class="w-full py-2 bg-purple-50 text-purple-700 font-bold rounded-xl border border-purple-200">+ ปลดล็อคช่องเพิ่ม</button>
+              </div>
+
+              <div id="btab-advanced" class="hidden space-y-3">
+                <label class="flex items-center gap-2"><input type="radio" name="bot-publish-visibility" value="public" checked> สาธารณะ (Public)</label>
+                <label class="flex items-center gap-2"><input type="radio" name="bot-publish-visibility" value="private"> ใช้ส่วนตัว (Private)</label>
+              </div>
+
+              <button onclick="submitSaveBotFromAdvanced()" class="w-full py-3 pastel-btn-primary font-bold rounded-2xl mt-2">บันทึกตัวละคร</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- SUB-VIEW C: BOT PROFILE HUB PAGE -->
+        <section id="view-bot-hub" class="hidden space-y-4 pb-8">
+          <div class="flex items-center justify-between px-1">
+            <button onclick="backFromBotHub()" class="text-slate-500 text-xs font-semibold"><i class="fa-solid fa-chevron-left"></i> ย้อนกลับ</button>
+            <div class="flex items-center gap-2">
+              <!-- ปุ่มถูกใจ บัญชีละ 1 ครั้ง -->
+              <button id="hub-like-btn" onclick="toggleHubBotLike()" class="flex items-center gap-1.5 px-3 py-1 bg-white border border-rose-200 rounded-full text-rose-500 text-xs font-bold shadow-sm transition active:scale-95">
+                <i id="hub-like-icon" class="fa-regular fa-heart"></i>
+                <span id="hub-like-count">0</span>
+              </button>
+              <!-- ปุ่มคนเล่น นับเฉพาะบัญชีอีเมล (1 บัญชี = 1 คนเล่น) -->
+              <div class="flex items-center gap-1 px-3 py-1 bg-white border border-purple-100 rounded-full text-purple-700 text-xs font-bold shadow-sm">
+                <i class="fa-solid fa-user-group text-[10px]"></i>
+                <span id="hub-player-count">0</span> คนเล่น
+              </div>
+            </div>
+          </div>
+
+          <!-- Hub Header Card -->
+          <div class="pastel-card p-4 rounded-3xl space-y-3">
+            <div class="flex gap-3">
+              <img id="hub-avatar" src="" class="w-16 h-16 rounded-2xl object-cover border-2 border-purple-200">
+              <div>
+                <h2 id="hub-name" class="text-base font-bold text-slate-800">ชื่อตัวละคร</h2>
+                <p id="hub-meta" class="text-xs text-purple-600">อายุ • อาชีพ</p>
+                <p id="hub-quote" class="text-xs text-slate-600 italic mt-1">"..."</p>
+              </div>
+            </div>
+            <p id="hub-preview" class="text-xs text-slate-600 pt-2 border-t border-purple-100"></p>
+          </div>
+
+          <!-- Tabs -->
+          <div class="flex p-1 bg-purple-100/60 rounded-2xl text-xs font-bold">
+            <button onclick="switchHubSubTab('story')" id="hub-tab-btn-story" class="flex-1 py-2 rounded-xl bg-white text-purple-700">ข้อมูลบอท</button>
+            <button onclick="switchHubSubTab('slots')" id="hub-tab-btn-slots" class="flex-1 py-2 rounded-xl text-slate-500">ข้อมูลตัวละคร</button>
+            <button onclick="switchHubSubTab('reviews')" id="hub-tab-btn-reviews" class="flex-1 py-2 rounded-xl text-slate-500">ความคิดเห็น/รีวิว</button>
+          </div>
+
+          <div id="hub-content-story" class="pastel-card p-4 rounded-3xl space-y-2 text-xs">
+            <h4 class="font-bold text-indigo-950">สตอรี่และเนื้อเรื่อง</h4>
+            <div id="hub-story-text" class="text-slate-600 whitespace-pre-line leading-relaxed"></div>
+          </div>
+
+          <div id="hub-content-slots" class="hidden space-y-3">
+            <div class="pastel-card p-4 rounded-3xl space-y-2">
+              <div class="flex justify-between items-center">
+                <h4 class="text-xs font-bold text-indigo-950">บันทึกของผู้เล่น (สูงสุด 5 ช่อง)</h4>
+                <button onclick="addPlayerHubSlot()" class="px-2 py-1 pastel-btn-primary rounded-xl text-[10px] font-bold">+ เพิ่มช่อง</button>
+              </div>
+              <div id="hub-player-slots-list" class="space-y-2"></div>
+            </div>
+            <div class="pastel-card p-4 rounded-3xl space-y-2">
+              <h4 class="text-xs font-bold text-indigo-950">ข้อมูลเฉพาะของบอท (สูงสุด 10 ช่อง)</h4>
+              <div id="hub-bot-slots-list" class="space-y-2"></div>
+            </div>
+          </div>
+
+          <!-- REVIEWS TAB (EDIT & DELETE & REPLY) -->
+          <div id="hub-content-reviews" class="hidden pastel-card p-4 rounded-3xl space-y-3">
+            <h4 class="text-xs font-bold text-indigo-950">รีวิวและเม้ามอย</h4>
+            <div class="space-y-2">
+              <textarea id="hub-review-input" rows="2" placeholder="เขียนรีวิวตัวละครนี้..." class="w-full pastel-input rounded-2xl p-2.5 text-xs focus:outline-none"></textarea>
+              <div class="flex justify-end">
+                <button onclick="submitHubReview()" class="px-3.5 py-1.5 pastel-btn-primary rounded-xl text-[11px] font-bold">ส่งความคิดเห็น</button>
+              </div>
+            </div>
+            <div id="hub-reviews-container" class="space-y-3 pt-2 border-t border-purple-100 max-h-80 overflow-y-auto hide-scrollbar"></div>
+          </div>
+
+          <button onclick="startChatFromBotHub()" class="w-full py-3.5 pastel-btn-primary font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg">
+            <i class="fa-solid fa-play"></i> เริ่มต้นเล่นบทสนทนา
+          </button>
+        </section>
+
+        <!-- TAB 3: CHATS -->
+        <section id="tab-chats" class="hidden space-y-3">
+          <div class="text-xs font-bold text-indigo-950">ประวัติเนื้อเรื่องทั้งหมด</div>
+          <div id="chat-records-list" class="space-y-2"></div>
+        </section>
+
+        <!-- TAB 4: SETTINGS -->
+        <section id="tab-settings" class="hidden space-y-3">
+          <div class="text-xs font-bold text-indigo-950">การตั้งค่าระบบ</div>
+          <div class="pastel-card rounded-3xl p-4 space-y-3 text-xs">
+            <button onclick="clearAllData()" class="text-rose-500 font-bold underline">ล้างข้อมูลทั้งหมด</button>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Bottom Nav -->
+      <nav class="h-16 bg-white border-t border-purple-100 flex justify-around items-center text-xs">
+        <button onclick="switchLobbyTab('home')" class="text-violet-600 font-bold"><i class="fa-solid fa-house"></i><br><span class="text-[9px]">โฮม</span></button>
+        <button onclick="switchLobbyTab('explore')" class="text-slate-400"><i class="fa-solid fa-compass"></i><br><span class="text-[9px]">ค้นหา</span></button>
+        <button onclick="switchLobbyTab('chats')" class="text-slate-400"><i class="fa-solid fa-book-open"></i><br><span class="text-[9px]">เนื้อเรื่อง</span></button>
+        <button onclick="switchLobbyTab('settings')" class="text-slate-400"><i class="fa-solid fa-gear"></i><br><span class="text-[9px]">ตั้งค่า</span></button>
+      </nav>
+    </div>
+
+    <!-- VIEW 2: CHAT ROOM -->
+    <div id="view-room" class="hidden flex-1 flex flex-col overflow-hidden bg-purple-50/40">
+      <header class="p-3 bg-white border-b border-purple-100 flex justify-between items-center">
+        <button onclick="handleBackAction()" class="text-xs text-purple-700 font-bold"><i class="fa-solid fa-arrow-left"></i> ย้อนกลับ</button>
+        <h2 id="room-name" class="text-xs font-bold text-slate-800">แชท</h2>
+      </header>
+      <div id="room-messages" class="flex-1 overflow-y-auto p-4 space-y-3 text-xs hide-scrollbar"></div>
+      <div class="p-3 bg-white border-t border-purple-100 flex gap-2">
+        <input id="chat-input" type="text" placeholder="พิมพ์ข้อความ..." class="flex-1 pastel-input text-xs px-3.5 py-2.5 rounded-full focus:outline-none" onkeydown="if(event.key==='Enter') handleSendChat()">
+        <button onclick="handleSendChat()" class="p-2.5 pastel-btn-primary rounded-full"><i class="fa-solid fa-paper-plane text-xs"></i></button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
